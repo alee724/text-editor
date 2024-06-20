@@ -1,0 +1,4 @@
+(executable
+ (public_name text)
+ (name main)
+ (libraries text notty notty.unix))

@@ -1,0 +1,8 @@
+#use "lib/grid.ml";;
+
+let x = Grid.empty();;
+Grid.add_row x;;
+let y = Grid.get_row ~row:0 x;;
+let z = Grid.get_row x;;
+
+y := "a" :: !y;;
