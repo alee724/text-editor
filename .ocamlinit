@@ -1,8 +1,13 @@
 #use "lib/grid.ml";;
+#use "lib/buffer.ml";;
 
 let x = Grid.empty();;
 Grid.add_row x;;
-let y = Grid.get_row ~row:0 x;;
-let z = Grid.get_row x;;
+let a = Grid.get_row ~row:0 x;;
+let b = Grid.get_row x;;
 
-y := "a" :: !y;;
+a := "abcdef" :: !a;;
+b := "1234567890" :: !b;;
+
+let buff = Buff.empty() ;; 
+Buff.ch_buff x buff 0;;

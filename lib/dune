@@ -1,2 +1,3 @@
 (library
- (name text))
+ (name text)
+  (libraries notty notty.unix ))
