@@ -2,6 +2,7 @@ open Notty
 open Notty_unix
 open Text.Buffer
 open Text.Grid
+open Text.Undo
 
 type cursor_pos_type = { mutable x : int; mutable y : int }
 
@@ -9,7 +10,8 @@ let term = Term.create ()
 let cursor_pos = { x = 0; y = 0 }
 let dim = Term.size term
 let grid = Grid.empty ()
-let buff = Buff.empty ();;
+let buff = Buff.empty ()
+let undo = Undo.empty ();;
 
 Buff.ch_buff grid buff 0
 
@@ -43,14 +45,15 @@ let delete () =
 
 let typing num_keys =
   move_by num_keys 0;
-  match cursor_pos.x >= fst dim with
+  (match cursor_pos.x >= fst dim with
   | true ->
       move_to 0 (cursor_pos.y + 1);
       (match Grid.length grid <= cursor_pos.y with
       | false -> ()
       | true -> Grid.add_row ~row:cursor_pos.y grid);
       Buff.ch_buff grid buff cursor_pos.y
-  | false -> ()
+  | false -> ());
+  Undo.add undo (Grid.toString grid) (cursor_pos.x, cursor_pos.y)
 
 let change_line () =
   Buff.ch_buff grid buff cursor_pos.y;
@@ -76,6 +79,12 @@ let arrow_keys direction =
       Buff.left_to_right buff
   | _ -> ()
 
+let load_undo () =
+  Grid.from_string grid (Undo.getVal undo);
+  let coords = Undo.getPos undo in
+  move_to (fst coords) (snd coords);
+  change_line ()
+
 let special_event ev =
   match ev with
   | `Arrow dir -> arrow_keys dir
@@ -99,6 +108,12 @@ let key_presses key mods =
       Buff.add buff (String.make 1 x);
       check ();
       typing 1
+  | 'Z', [ `Ctrl ] ->
+      Undo.undo undo;
+      load_undo ()
+  | 'R', [ `Ctrl ] ->
+      Undo.redo undo;
+      load_undo ()
   | _ -> ()
 
 let rec main_loop term =

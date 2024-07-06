@@ -13,7 +13,8 @@ module type GridMod = sig
   val deoptimize : elem list ref -> unit
   val image : grid -> I.t
   val square : ?row:int -> grid -> int -> unit
-  val length:  grid -> int 
+  val length : grid -> int
+  val from_string : grid -> string -> unit
 end
 
 module Grid : GridMod with type elem = string = struct
@@ -59,6 +60,7 @@ module Grid : GridMod with type elem = string = struct
     let rec helper grid =
       match grid with
       | [] -> ""
+      | [ x ] -> List.fold_left str_concat "" !x
       | h :: t -> List.fold_left str_concat "" !h ^ "\n" ^ helper t
     in
     helper !grid
@@ -70,7 +72,7 @@ module Grid : GridMod with type elem = string = struct
     |> List.map (String.make 1)
     |> List.append acc
 
-  let deoptimize lst_ref = lst_ref := List.fold_left str_to_lst [] !lst_ref 
+  let deoptimize lst_ref = lst_ref := List.fold_left str_to_lst [] !lst_ref
 
   let image grid =
     let rec inner_helper line =
@@ -105,7 +107,9 @@ module Grid : GridMod with type elem = string = struct
       | h :: t when row = 0 -> (
           deoptimize h;
           match List.length !h < length with
-          | true -> optimize h; outer 0 t
+          | true ->
+              optimize h;
+              outer 0 t
           | false -> (
               let excess = reassign h length in
               match t with
@@ -115,10 +119,16 @@ module Grid : GridMod with type elem = string = struct
                   last_row := excess
               | h2 :: _ ->
                   h2 := List.append excess !h2;
-                  optimize h; outer 0 t))
+                  optimize h;
+                  outer 0 t))
       | _ :: t -> outer (row - 1) t
     in
     outer row !grid
 
-  let length grid = List.length !grid 
+  let length grid = List.length !grid
+
+  let from_string grid str =
+    let lst = Str.split (Str.regexp "[\n]+") str in
+    let lst = List.map (fun x -> ref [ x ]) lst in
+    grid := lst
 end

@@ -43,6 +43,9 @@ module type GridMod = sig
   val length : grid -> int
   (** [length grid] does the List.length operation of the grid to get the total 
       number of rows in the grid *)
+
+  val from_string : grid -> string -> unit 
+  (** [from_string o s] replaces the grid [o] with a new grid made from a string [s] *)
 end
 
 module Grid : GridMod with type elem = string
