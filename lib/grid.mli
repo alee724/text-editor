@@ -35,6 +35,14 @@ module type GridMod = sig
 
   val image : grid -> I.t
   (** [image grid] creates an image from [grid] to be used in the notty terminal *)
+
+  val square : ?row:int -> grid -> int -> unit
+  (** [square r grid l] makes [grid] square according to the length [l] starting from 
+      row [r], pushing excess contents to the next row *)
+
+  val length : grid -> int
+  (** [length grid] does the List.length operation of the grid to get the total 
+      number of rows in the grid *)
 end
 
 module Grid : GridMod with type elem = string

@@ -1,12 +1,3 @@
-(* Outline of what needs to be done  *)
-(* - the basic split buffer feature of this module  *)
-(* - needs to have some form of "grid" such that we can have multiple lines *)
-(* - functions revealed to the "client" will only involve methods that already optimize or deoptimize a line  *)
-(* - no need to care about colors for now, not sure if I can easily implement that as of now *)
-(* - needs functions for changing lines, adding to a line, moving elements from one buffer to another  *)
-(* - creation of a new line, deleting a line, wrap around, pushing forward *)
-(* - that is all that pops up in mind for now *)
-
 open Grid
 
 module type BuffMod = sig
@@ -38,6 +29,14 @@ module type BuffMod = sig
   val delete : ?num:int -> buff -> unit
   (** [delete num buff] deletes n elements from the left buffer in [buff], 
         n is 1 if not specified by [num] *)
+
+  val get_line : buff -> Grid.elem list ref
+  (** [get_line buff] returns the referenced line in [buff] *)
+
+  val update_buff : buff -> unit
+  (** [update_buff b] updates the buffer [b] with the contents on the line. This should only 
+      be used if changes were made to the grid containing the line but the buffer has not been 
+      changed accordingly *)
 end
 
 module Buff : BuffMod with type grid = Grid.grid

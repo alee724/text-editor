@@ -10,6 +10,8 @@ module type BuffMod = sig
   val left_to_right : ?num:int -> buff -> unit
   val right_to_left : ?num:int -> buff -> unit
   val delete : ?num:int -> buff -> unit
+  val get_line : buff -> Grid.elem list ref 
+  val update_buff : buff -> unit 
 end
 
 module Buff : BuffMod with type grid = Grid.grid = struct
@@ -66,4 +68,10 @@ module Buff : BuffMod with type grid = Grid.grid = struct
     let n_lst = helper (List.rev buff.left) num in
     buff.left <- List.rev n_lst;
     update buff
+
+  let get_line buff = buff.line
+
+  let update_buff buff = 
+      let len = List.length buff.left in Grid.deoptimize buff.line;
+      buff.left <- []; buff.right <- !(buff.line); right_to_left ~num:len buff
 end
