@@ -10,8 +10,11 @@ module type BuffMod = sig
   val left_to_right : ?num:int -> buff -> unit
   val right_to_left : ?num:int -> buff -> unit
   val delete : ?num:int -> buff -> unit
-  val get_line : buff -> Grid.elem list ref 
-  val update_buff : buff -> unit 
+  val get_line : buff -> Grid.elem list ref
+  val get_left : buff -> Grid.elem list
+  val get_right : buff -> Grid.elem list
+  val set : buff -> Grid.elem list -> Grid.elem list -> unit
+  val update_buff : buff -> unit
 end
 
 module Buff : BuffMod with type grid = Grid.grid = struct
@@ -33,7 +36,7 @@ module Buff : BuffMod with type grid = Grid.grid = struct
   let ch_buff grid buff row =
     update buff;
     Grid.optimize buff.line;
-    let line = Grid.get_row ~row:row grid in
+    let line = Grid.get_row ~row grid in
     Grid.deoptimize line;
     buff.left <- [];
     buff.right <- !line;
@@ -70,8 +73,18 @@ module Buff : BuffMod with type grid = Grid.grid = struct
     update buff
 
   let get_line buff = buff.line
+  let get_left buff = buff.left
+  let get_right buff = buff.right
 
-  let update_buff buff = 
-      let len = List.length buff.left in Grid.deoptimize buff.line;
-      buff.left <- []; buff.right <- !(buff.line); right_to_left ~num:len buff
+  let set buff left right =
+    buff.left <- left;
+    buff.right <- right;
+    update buff
+
+  let update_buff buff =
+    let len = List.length buff.left in
+    Grid.deoptimize buff.line;
+    buff.left <- [];
+    buff.right <- !(buff.line);
+    right_to_left ~num:len buff
 end

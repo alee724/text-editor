@@ -27,7 +27,8 @@ module Grid : GridMod with type elem = string = struct
     let rec helper row grid =
       match grid with
       | [] -> !(empty ())
-      | _ when row <= 0 -> List.append grid !(empty ())
+      | _ when row = -1 -> List.append grid !(empty ())
+      | h :: t when row = 0 -> h :: ref [] :: t
       | h :: t -> h :: helper (row - 1) t
     in
     grid := helper row !grid
@@ -77,7 +78,7 @@ module Grid : GridMod with type elem = string = struct
   let image grid =
     let rec inner_helper line =
       match line with
-      | [] -> I.void 0 0
+      | [] -> I.void 0 1
       | h :: t -> I.(string A.empty h <|> inner_helper t)
     in
     let rec out_helper grid =
@@ -129,6 +130,9 @@ module Grid : GridMod with type elem = string = struct
 
   let from_string grid str =
     let lst = Str.split (Str.regexp "[\n]+") str in
-    let lst = List.map (fun x -> ref [ x ]) lst in
-    grid := lst
+    match lst with
+    | [] -> grid := !(empty ())
+    | _ ->
+        let lst = List.map (fun x -> ref [ x ]) lst in
+        grid := lst
 end

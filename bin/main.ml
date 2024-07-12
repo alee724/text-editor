@@ -3,6 +3,15 @@ open Notty_unix
 open Text.Buffer
 open Text.Grid
 open Text.Undo
+open Text.File
+
+let grid_save name grid = save_file name (Grid.toString grid)
+let grid_load name grid = Grid.from_string grid (load_file name)
+
+let get_time () =
+  String.sub
+    Core.Time_ns.(to_string_utc (sub (now ()) (Span.create ~hr:4 ())))
+    0 19
 
 type cursor_pos_type = { mutable x : int; mutable y : int }
 
@@ -10,6 +19,10 @@ let term = Term.create ()
 let cursor_pos = { x = 0; y = 0 }
 let dim = Term.size term
 let grid = Grid.empty ()
+let command_line = ref "";;
+
+grid_load Sys.argv.(1) grid
+
 let buff = Buff.empty ()
 let undo = Undo.empty ();;
 
@@ -66,7 +79,7 @@ let arrow_keys direction =
   | `Up when cursor_pos.y > 0 ->
       move_by 0 (-1);
       change_line ()
-  | `Down when cursor_pos.y < snd dim ->
+  | `Down when cursor_pos.y < snd dim && cursor_pos.y < Grid.length grid - 1 ->
       move_by 0 1;
       change_line ()
   | `Right
@@ -98,8 +111,12 @@ let special_event ev =
   | `Backspace | `Delete -> delete ()
   | `Enter ->
       Grid.add_row ~row:cursor_pos.y grid;
-      move_to 0 (cursor_pos.y + 1);
-      Buff.ch_buff grid buff cursor_pos.y
+       move_to 0 (cursor_pos.y + 1);
+
+      let r_contents = Buff.get_right buff in
+      Buff.set buff (Buff.get_left buff) [];
+      Buff.ch_buff grid buff cursor_pos.y;
+      Buff.set buff [] r_contents
   | _ -> ()
 
 let key_presses key mods =
@@ -114,10 +131,21 @@ let key_presses key mods =
   | 'R', [ `Ctrl ] ->
       Undo.redo undo;
       load_undo ()
+  | 'S', [ `Ctrl ] ->
+      grid_save Sys.argv.(1) grid;
+      command_line := get_time ()
   | _ -> ()
 
 let rec main_loop term =
-  Term.image term (Grid.image grid);
+  let img =
+    match !command_line with
+    | "" -> Grid.image grid
+    | _ ->
+        I.(
+          vcrop (1 - snd dim) 0 @@ string A.empty !command_line
+          </> Grid.image grid)
+  in
+  Term.image term img;
   Term.cursor term (Some (cursor_pos.x, cursor_pos.y));
   match Term.event term with
   | `End | `Key (`Escape, []) -> ()
