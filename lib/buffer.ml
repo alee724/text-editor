@@ -15,6 +15,7 @@ module type BuffMod = sig
   val get_right : buff -> Grid.elem list
   val set : buff -> Grid.elem list -> Grid.elem list -> unit
   val update_buff : buff -> unit
+  val set_line : buff -> Grid.elem list ref -> unit 
 end
 
 module Buff : BuffMod with type grid = Grid.grid = struct
@@ -87,4 +88,8 @@ module Buff : BuffMod with type grid = Grid.grid = struct
     buff.left <- [];
     buff.right <- !(buff.line);
     right_to_left ~num:len buff
+
+  let set_line buff line =
+    buff.line <- line;
+    update_buff buff
 end

@@ -33,22 +33,27 @@ module type BuffMod = sig
   val get_line : buff -> Grid.elem list ref
   (** [get_line buff] returns the referenced line in [buff] *)
 
-  val get_left : buff -> Grid.elem list 
-  (* [get_left b] obtains the contents of the left buffer, 
+  val get_left : buff -> Grid.elem list
+  (* [get_left b] obtains the contents of the left buffer,
      i.e. everything to the left of the buffer *)
 
-  val get_right : buff -> Grid.elem list 
-  (* [get_right b] obtains the contents of the right buffer, 
+  val get_right : buff -> Grid.elem list
+  (* [get_right b] obtains the contents of the right buffer,
      i.e. everything to the right of the buffer *)
 
-  val set : buff -> Grid.elem list -> Grid.elem list -> unit 
-  (* [set buff left right] sets the contents of the left and right buffers 
+  val set : buff -> Grid.elem list -> Grid.elem list -> unit
+  (* [set buff left right] sets the contents of the left and right buffers
      of [buff] with [left] and [right] *)
 
   val update_buff : buff -> unit
   (** [update_buff b] updates the buffer [b] with the contents on the line. This should only 
       be used if changes were made to the grid containing the line but the buffer has not been 
       changed accordingly *)
+
+  val set_line : buff -> Grid.elem list ref -> unit
+  (** [set_line buff line] sets the buffer line to [line] and updates the buffer with the
+      contents of [line] using [update_buff]. Currently this method is for a buffer that
+      does not use a grid *)
 end
 
 module Buff : BuffMod with type grid = Grid.grid
